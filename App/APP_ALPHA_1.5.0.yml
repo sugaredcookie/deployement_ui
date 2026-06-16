@@ -1,0 +1,6 @@
+name: APP_ALPHA
+version: 1.5.0
+environment: UAT
+status: Succeeded
+release_date: 2026-06-17
+description: Major performance improvements

@@ -1,0 +1,6 @@
+name: APP_DELTA
+version: 4.0.0
+environment: PROD
+status: Succeeded
+release_date: 2026-06-15
+description: Major version release

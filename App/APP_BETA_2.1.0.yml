@@ -1,0 +1,6 @@
+name: APP_BETA
+version: 2.1.0
+environment: PROD
+status: Succeeded
+release_date: 2026-06-16
+description: Security patch and UI improvements

@@ -1,0 +1,6 @@
+name: APP_GAMMA
+version: 3.1.0
+environment: PROD
+status: Succeeded
+release_date: 2026-06-16
+description: Performance optimization

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#020617]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linedata | Releases</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 9px; }
+    </style>
+</head>
+<body class="text-slate-200 bg-[#020617] p-4 md:p-8 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-6 mb-8">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-diagram-project text-red-500 text-3xl"></i>
+                <h1 class="text-3xl font-black tracking-tighter text-white">LINEDATA RELEASES</h1>
+            </div>
+            <div class="flex items-center gap-2 text-sm font-mono">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-slate-400">Platform Development</span>
+                <span class="text-emerald-400">• LIVE</span>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-500"></i>
+                <input id="search" type="text" placeholder="Search applications or versions..." 
+                       onkeyup="filterReleases()" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 py-3 text-sm focus:outline-none">
+            </div>
+        </div>
+
+        <!-- Releases Grid -->
+        <div id="releasesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- JS populated -->
+        </div>
+    </div>
+
+    <script>
+        async function loadReleases() {
+            const container = document.getElementById('releasesContainer');
+            container.innerHTML = `<div class="col-span-full text-center py-16 text-slate-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4"></i><p>Loading releases...</p>
+            </div>`;
+
+            try {
+                const res = await fetch('../App/index.json');
+                const files = await res.json();
+
+                let html = '';
+                files.forEach(file => {
+                    const match = file.match(/APP_([A-Z]+)_([\d.]+)\.yml/i);
+                    if (match) {
+                        const app = match[1];
+                        const version = match[2];
+                        html += `
+                            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 hover:border-red-500/30 transition-all">
+                                <div class="flex justify-between mb-4">
+                                    <h3 class="text-xl font-semibold">${app}</h3>
+                                    <span class="px-3 py-1 text-xs font-mono bg-slate-800 rounded-full">${version}</span>
+                                </div>
+                                <div class="text-xs text-slate-500 font-mono mb-5">${file}</div>
+                                <button onclick="viewRelease('${file}')" 
+                                        class="w-full py-2.5 text-sm bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+                                    View Release Details
+                                </button>
+                            </div>`;
+                    }
+                });
+
+                container.innerHTML = html || `<div class="col-span-full text-center py-16 text-slate-400">No releases found</div>`;
+            } catch (e) {
+                container.innerHTML = `<div class="col-span-full text-red-500 text-center py-16">Failed to load releases</div>`;
+            }
+        }
+
+        function filterReleases() {
+            const term = document.getElementById('search').value.toLowerCase();
+            document.querySelectorAll('#releasesContainer > div').forEach(card => {
+                card.style.display = card.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        }
+
+        function viewRelease(filename) {
+            alert(`📄 Release Details for: ${filename}\n\nThis will be expanded later with full YAML content.`);
+        }
+
+        window.onload = loadReleases;
+    </script>
+</body>
+</html>

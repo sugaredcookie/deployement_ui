@@ -1,0 +1,6 @@
+name: APP_BETA
+version: 2.3.0
+environment: UAT
+status: Succeeded
+release_date: 2026-06-17
+description: New analytics module

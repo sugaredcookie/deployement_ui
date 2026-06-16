@@ -1,0 +1,6 @@
+name: APP_BETA
+version: 2.0.0
+environment: UAT
+status: Succeeded
+release_date: 2026-06-15
+description: Initial release of APP_BETA

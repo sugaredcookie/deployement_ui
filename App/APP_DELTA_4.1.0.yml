@@ -1,0 +1,6 @@
+name: APP_DELTA
+version: 4.1.0
+environment: UAT
+status: Succeeded
+release_date: 2026-06-16
+description: Bug fixes

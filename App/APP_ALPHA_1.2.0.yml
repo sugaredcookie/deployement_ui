@@ -1,0 +1,6 @@
+name: APP_ALPHA
+version: 1.2.0
+environment: PROD
+status: Succeeded
+release_date: 2026-06-16
+description: Minor feature update and bug fixes
