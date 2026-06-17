@@ -1,0 +1,18 @@
+# Linedata Release Manifest - APP_DELTA v4.3.0
+release:
+  version: "4.3.0"
+  date: "2026-06-17"
+  environment: "PROD"
+
+application:
+  name: APP_DELTA
+  client: CLIENT_A
+  description: APP_DELTA Release
+
+changes:
+  - - Added new feature
+
+metadata:
+  build_id: "build-1781710195731"
+  triggered_by: "releases-dashboard"
+  notes: "Generated via Linedata Releases Portal"
