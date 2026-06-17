@@ -1,0 +1,18 @@
+# Linedata Release Manifest - APP_ALPHA v1.7.0
+release:
+  version: "1.7.0"
+  date: "2026-06-17"
+  environment: "PROD"
+
+application:
+  name: APP_ALPHA
+  client: CLIENT_A
+  description: APP_ALPHA Release
+
+changes:
+  - Improved performance
+
+metadata:
+  build_id: "build-1781710847180"
+  triggered_by: "releases-dashboard"
+  notes: "Generated via Linedata Releases Portal"
