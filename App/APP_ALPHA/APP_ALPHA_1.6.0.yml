@@ -1,0 +1,37 @@
+# Linedata Release Manifest - APP_ALPHA v1.6.0
+release:
+  version: "1.6.0"
+  date: "2026-06-17"
+  environment: "UAT"   # Change to PROD after successful promotion
+
+application:
+  name: APP_ALPHA
+  client: CLIENT_A
+  description: Core Asset Management Module with improved reconciliation engine
+
+changes:
+  - type: feature
+    description: Added support for real-time portfolio sync
+  - type: improvement
+    description: Enhanced error handling for data validation
+  - type: fix
+    description: Resolved memory leak in batch processing
+
+dependencies:
+  - name: core-lib
+    version: "2.4.1"
+  - name: reconciliation-engine
+    version: "1.3.0"
+
+deployment:
+  required_approvers: ["platform-team"]
+  rollback_version: "1.5.0"
+  validation_steps:
+    - "Run smoke tests in UAT"
+    - "Verify data integrity"
+    - "Check performance metrics"
+
+metadata:
+  build_id: "build-20260617-1423"
+  commit_sha: "a1b2c3d4e5f6..."
+  triggered_by: "github-actions"
