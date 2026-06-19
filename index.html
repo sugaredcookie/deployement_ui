@@ -13,7 +13,7 @@
         input:focus, select:focus { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4); }
     </style>
 </head>
-<body class="text-slate-200 bg-[#020617] p-6 md:p-10 min-h-screen relative">
+<body class="text-slate-300 bg-[#020617] p-6 md:p-10 min-h-screen relative tracking-normal">
 
     <div class="max-w-7xl mx-auto mb-8 flex items-center justify-between border-b border-slate-800 pb-5">
         <div>
@@ -28,25 +28,25 @@
 
     <div class="max-w-7xl mx-auto mb-6 flex gap-4">
         <select id="appFilter" onchange="renderTable()" 
-                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-xs text-slate-400 outline-none cursor-pointer tracking-wide shadow-inner">
+                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-3 text-xs text-slate-200 font-medium outline-none cursor-pointer tracking-wide shadow-inner">
             <option value="">All Applications</option>
         </select>
-        <a href="releases.html" class="px-5 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-all shadow-sm">
+        <a href="releases.html" class="px-5 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-all shadow-sm text-slate-200">
             <i class="fa-solid fa-clock-history text-red-400"></i> Release Ledger
         </a>
     </div>
 
-    <div class="max-w-7xl mx-auto bg-slate-900/30 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
-        <table class="w-full text-left table-fixed text-xs">
+    <div class="max-w-7xl mx-auto bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+        <table class="w-full text-left table-fixed text-xs border-collapse">
             <thead>
-                <tr class="border-b border-slate-800 bg-slate-950/60 font-bold uppercase tracking-wider text-slate-400 text-[10px]">
-                    <th class="p-4 pl-8 w-[20%]">Client</th>
-                    <th class="p-4 w-[25%]">App Module</th>
-                    <th class="p-4 text-center w-[27%]">UAT</th>
-                    <th class="p-4 text-center w-[28%]">PROD</th>
+                <tr class="border-b border-slate-800 bg-slate-950 font-bold uppercase tracking-wider text-slate-400 text-[10px]">
+                    <th class="p-4 pl-8 w-[20%] border-r border-slate-800/60">Client</th>
+                    <th class="p-4 w-[25%] border-r border-slate-800/60">App Module</th>
+                    <th class="p-4 text-center w-[27%] border-r border-slate-800/60 bg-slate-950/40">UAT</th>
+                    <th class="p-4 text-center w-[28%] bg-slate-950/20">PROD</th>
                 </tr>
             </thead>
-            <tbody id="matrix-body" class="divide-y divide-slate-800/50">
+            <tbody id="matrix-body" class="divide-y divide-slate-800">
                 <tr><td colspan="4" class="p-12 text-center text-slate-500 font-medium font-mono text-xs"><i class="fa-solid fa-circle-notch fa-spin mr-2 text-red-500"></i>Loading tracking paths...</td></tr>
             </tbody>
         </table>
@@ -71,7 +71,7 @@
                 </div>
             </div>
             <div class="border-t border-slate-800 p-3 flex gap-2 justify-end bg-slate-950/10">
-                <button onclick="closeUpgradeModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold transition">Cancel</button>
+                <button onclick="closeUpgradeModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold transition text-slate-300">Cancel</button>
                 <button id="upgradeConfirmBtn" onclick="submitUpgradeAction()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">Trigger Upgrade</button>
             </div>
         </div>
@@ -164,43 +164,43 @@
                 const releaseIdProd = item.rowProd?.ReleaseId || "—";
 
                 htmlBuffer += `
-                    <tr class="hover:bg-slate-900/10 transition group border-b border-slate-800/30">
-                        <td class="p-3.5 pl-8 font-bold text-white tracking-wide truncate">${item.client.replace(/_/g, ' ')}</td>
-                        <td class="p-3.5 font-sans font-bold text-slate-300 text-[13px] truncate">${item.app.replace(/_/g, ' ')}</td>
+                    <tr class="hover:bg-slate-800/30 bg-slate-900/20 transition group">
+                        <td class="p-4 pl-8 font-extrabold text-white tracking-wide truncate border-r border-slate-800/60">${item.client.replace(/_/g, ' ')}</td>
+                        <td class="p-4 font-sans font-bold text-slate-100 text-[13px] truncate border-r border-slate-800/60">${item.app.replace(/_/g, ' ')}</td>
                         
-                        <td class="p-3.5 text-center bg-slate-950/5">
-                            <span class="font-mono text-xs ${item.uat !== '-' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'text-slate-600'} px-2.5 py-0.5 rounded">${item.uat}</span>
-                            <div class="text-[10px] text-slate-500 font-mono mt-1">${releaseIdUat}</div>
-                            <div class="mt-2 space-x-1 flex items-center justify-center">
+                        <td class="p-4 text-center bg-slate-950/20 border-r border-slate-800/60">
+                            <span class="font-mono text-xs font-bold ${item.uat !== '-' ? 'bg-slate-950 border border-blue-500/40 text-blue-400' : 'text-slate-600 bg-slate-900/40'} px-2.5 py-1 rounded shadow-sm inline-block min-w-[90px]">${item.uat}</span>
+                            <div class="text-[10px] text-slate-400 font-mono mt-1 font-semibold">${releaseIdUat}</div>
+                            <div class="mt-2.5 space-x-1 flex items-center justify-center">
                                 ${item.uat !== '-' ? `
                                     <button onclick="triggerPipelineAction('PROMOTION', '${item.client}', '${item.app}', 'UAT', 'PROD', '${releaseIdUat}', '${item.uat}')"
-                                            class="px-2 py-1 rounded bg-green-600/10 border border-green-500/20 text-green-400 hover:bg-green-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                            class="px-2.5 py-1 rounded bg-green-600/10 border border-green-500/30 text-green-400 hover:bg-green-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
                                         Promote
                                     </button>
                                     <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${item.app}', 'QA', 'UAT', '${releaseIdUat}', '${item.uat}')"
-                                            class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-400 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                            class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
                                         Rollback
                                     </button>
                                 ` : ''}
                                 <button onclick="openUpgradeWizard('${item.client}', '${item.app}', '${item.uat}', 'UAT')"
-                                        class="px-2 py-1 rounded bg-blue-600/10 border border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                        class="px-2.5 py-1 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
                                     Upgrade
                                 </button>
                             </div>
                         </td>
 
-                        <td class="p-3.5 text-center">
-                            <span class="font-mono text-xs ${item.prod !== '-' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-slate-600'} px-2.5 py-0.5 rounded">${item.prod}</span>
-                            <div class="text-[10px] text-slate-500 font-mono mt-1">${releaseIdProd}</div>
-                            <div class="mt-2 space-x-1 flex items-center justify-center">
+                        <td class="p-4 text-center bg-slate-950/10">
+                            <span class="font-mono text-xs font-bold ${item.prod !== '-' ? 'bg-slate-950 border border-emerald-500/40 text-emerald-400' : 'text-slate-600 bg-slate-900/40'} px-2.5 py-1 rounded shadow-sm inline-block min-w-[90px]">${item.prod}</span>
+                            <div class="text-[10px] text-slate-400 font-mono mt-1 font-semibold">${releaseIdProd}</div>
+                            <div class="mt-2.5 space-x-1 flex items-center justify-center">
                                 ${item.prod !== '-' ? `
                                     <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${item.app}', 'UAT', 'PROD', '${releaseIdProd}', '${item.prod}')"
-                                            class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-400 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                            class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
                                         Rollback
                                     </button>
                                 ` : ''}
                                 <button onclick="openUpgradeWizard('${item.client}', '${item.app}', '${item.prod}', 'PROD')"
-                                        class="px-2 py-1 rounded bg-blue-600/10 border border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                        class="px-2.5 py-1 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">
                                     Upgrade
                                 </button>
                             </div>
@@ -208,22 +208,14 @@
                     </tr>`;
             });
 
-            document.getElementById('matrix-body').innerHTML = htmlBuffer || `<tr><td colspan="4" class="p-8 text-center text-slate-500 font-medium">No records match.</td></tr>`;
+            document.getElementById('matrix-body').innerHTML = htmlBuffer || `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">No records match.</td></tr>`;
         }
 
         window.triggerPipelineAction = function(type, client, project, sourceEnv, targetEnv, releaseId, version) {
-            const title = encodeURIComponent(`[${type.toUpperCase()}] ${project} Deployment Run`);
-            const rawTemplateBody = `Client: ${client}
-Project: ${project}
-Source Environment: ${sourceEnv}
-Target Environment: ${targetEnv}
-Release ID: ${releaseId}
-Version: ${version}
-Request Type: ${type.toUpperCase()}
-Change Reason: Requested via Dashboard UI Context Engine`;
-
-            const body = encodeURIComponent(rawTemplateBody);
-            window.open(`https://github.com/sugaredcookie/linedata_task_1/issues/new?title=${title}&body=${body}`, '_blank');
+            // FIXED: Removed GitHub Issue Template formatting strings completely.
+            // Dynamically constructs the fallback file link target mapping coordinates inside the repo.
+            const targetWorkflowPath = `https://github.com/sugaredcookie/linedata_task_1/actions/workflows/deployment.yml?query=branch%3Amain+event%3Aworkflow_dispatch`;
+            window.open(targetWorkflowPath, '_blank');
         };
 
         window.openUpgradeWizard = function(client, app, currentVersion, targetEnv) {
