@@ -69,7 +69,7 @@
             <div class="p-5 space-y-4">
                 <div>
                     <label class="block text-slate-400 font-mono text-[10px] mb-1.5 tracking-wider">AVAILABLE NEWER UAT VERSIONS (ASCENDING)</label>
-                    <select id="upgradeVersionSelect" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 outline-none text-slate-200 font-mono cursor-pointer"></select>
+                    <select id="upgradeVersionSelect" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 outline-none text-xs text-slate-200 font-mono cursor-pointer"></select>
                 </div>
                 <div id="upgradeNoVersionsWarning" class="hidden p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[11px] leading-relaxed">
                     <i class="fa-solid fa-circle-info mr-1"></i> No newer versions for this application have passed UAT verification yet.
@@ -83,8 +83,8 @@
     </div>
 
     <script>
-        const deploymentLogsPath = "../applications";
-        const deploymentLogsIndexUrl = `${deploymentLogsPath}/index.json`;
+        // CHANGED: Target single unified file source pathway directly
+        const deploymentLogsCSV = "../applications/deploymentlogs.csv";
 
         let deployments = [];
         let upgradeContext = null;
@@ -104,19 +104,23 @@
         async function loadData() {
             const container = document.getElementById('matrix-body');
             try {
-                const res = await fetch(deploymentLogsIndexUrl); if (!res.ok) throw new Error();
-                const files = await res.json(); deployments = [];
-                for (const file of files) {
-                    if (!file.endsWith('.csv')) continue;
-                    const fRes = await fetch(`${deploymentLogsPath}/${file}`); if (!fRes.ok) continue;
-                    deployments.push(...parseCSV(await fRes.text()));
-                }
-                populateAppDropdown(); renderTable();
-            } catch (e) { container.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Failed to load data</td></tr>`; }
+                // CHANGED: Unified optimization fetching raw telemetry from single CSV master tracking path
+                const res = await fetch(deploymentLogsCSV);
+                if (!res.ok) throw new Error("deploymentlogs.csv not found");
+                
+                const csvText = await res.text();
+                deployments = parseCSV(csvText);
+
+                populateAppDropdown(); 
+                renderTable();
+            } catch (e) { 
+                container.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Failed to parse static log logs.</td></tr>`; 
+            }
         }
 
         function parseCSV(text) {
             const lines = text.trim().split("\n");
+            if (lines.length === 0 || !lines[0]) return [];
             const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim());
             return lines.slice(1).map(line => {
                 const values = line.split(",").map(v => v.replace(/"/g, "").trim());
@@ -136,10 +140,11 @@
             const filtered = filterVal ? deployments.filter(d => d.Application === filterVal) : deployments;
             const grouped = {};
 
+            // CHANGED: Reverted key layout tracking map constraint to represent single composite rows per App per Client
             filtered.forEach(row => {
-                const key = `${row.Client}-${row.Application}-${row.Module || row.Version}`;
+                const key = `${row.Client}-${row.Application}`;
                 if (!grouped[key]) {
-                    grouped[key] = { client: row.Client, app: row.Application, module: row.Module || row.Application, uat: "-", prod: "-", rowUat: null, rowProd: null };
+                    grouped[key] = { client: row.Client, app: row.Application, uat: "-", prod: "-", rowUat: null, rowProd: null };
                 }
                 if (row.Environment === "UAT") { grouped[key].uat = row.Version; grouped[key].rowUat = row; }
                 if (row.Environment === "PROD") { grouped[key].prod = row.Version; grouped[key].rowProd = row; }
@@ -148,21 +153,21 @@
             let htmlBuffer = '';
             Object.values(grouped).forEach(item => {
                 const idUat = item.rowUat?.ReleaseId || "—", idProd = item.rowProd?.ReleaseId || "—";
-                const dName = item.rowUat?.Module || item.rowProd?.Module || item.app;
+                const displayAppName = item.app;
 
                 htmlBuffer += `
                     <tr class="hover:bg-slate-800/30 bg-slate-900/20 transition group">
                         <td class="p-4 pl-8 font-extrabold text-white tracking-wide truncate border-r border-slate-800/60">${item.client.replace(/_/g, ' ')}</td>
-                        <td class="p-4 font-sans font-bold text-slate-100 text-[13px] truncate border-r border-slate-800/60">${dName.replace(/_/g, ' ')}</td>
+                        <td class="p-4 font-sans font-bold text-slate-100 text-[13px] truncate border-r border-slate-800/60">${displayAppName.replace(/_/g, ' ')}</td>
                         <td class="p-4 text-center bg-slate-950/20 border-r border-slate-800/60">
                             <span class="font-mono text-xs font-bold ${item.uat !== '-' ? 'bg-slate-950 border border-blue-500/40 text-blue-400' : 'text-slate-600 bg-slate-900/40'} px-2.5 py-1 rounded shadow-sm inline-block min-w-[90px]">${item.uat}</span>
                             <div class="text-[10px] text-slate-400 font-mono mt-1 font-semibold">${idUat}</div>
                             <div class="mt-2.5 space-x-1 flex items-center justify-center">
                                 ${item.uat !== '-' ? `
-                                    <button onclick="triggerPipelineAction('PROMOTION', '${item.client}', '${dName}', 'UAT', 'PROD', '${idUat}', '${item.uat}')" class="px-2.5 py-1 rounded bg-green-600/10 border border-green-500/30 text-green-400 hover:bg-green-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Promote</button>
-                                    <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${dName}', 'QA', 'UAT', '${idUat}', '${item.uat}')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Rollback</button>
+                                    <button onclick="triggerPipelineAction('PROMOTION', '${item.client}', '${displayAppName}', 'UAT', 'PROD', '${idUat}', '${item.uat}')" class="px-2.5 py-1 rounded bg-green-600/10 border border-green-500/30 text-green-400 hover:bg-green-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Promote</button>
+                                    <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${displayAppName}', 'QA', 'UAT', '${idUat}', '${item.uat}')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Rollback</button>
                                 ` : ''}
-                                <button onclick="openUpgradeWizard('${item.client}', '${dName}', '${item.uat}', 'UAT')" class="px-2.5 py-1 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Upgrade</button>
+                                <button onclick="openUpgradeWizard('${item.client}', '${displayAppName}', '${item.uat}', 'UAT')" class="px-2.5 py-1 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Upgrade</button>
                             </div>
                         </td>
                         <td class="p-4 text-center bg-slate-950/10">
@@ -170,9 +175,9 @@
                             <div class="text-[10px] text-slate-400 font-mono mt-1 font-semibold">${idProd}</div>
                             <div class="mt-2.5 space-x-1 flex items-center justify-center">
                                 ${item.prod !== '-' ? `
-                                    <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${dName}', 'UAT', 'PROD', '${idProd}', '${item.prod}')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Rollback</button>
+                                    <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${displayAppName}', 'UAT', 'PROD', '${idProd}', '${item.prod}')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Rollback</button>
                                 ` : ''}
-                                <button onclick="openUpgradeWizard('${item.client}', '${dName}', '${item.prod}', 'PROD')" class="px-2.5 py-1 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Upgrade</button>
+                                <button onclick="openUpgradeWizard('${item.client}', '${displayAppName}', '${item.prod}', 'PROD')" class="px-2.5 py-1 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Upgrade</button>
                             </div>
                         </td>
                     </tr>`;
@@ -186,9 +191,9 @@
 
         window.openUpgradeWizard = function(client, app, curVer, targetEnv) {
             upgradeContext = { client, app, currentVersion: curVer, targetEnv };
-            document.getElementById('upgradeTargetSubtitle').textContent = `Module: ${app} | Active ${targetEnv} Version: ${curVer}`;
+            document.getElementById('upgradeTargetSubtitle').textContent = `App: ${app} | Active ${targetEnv} Version: ${curVer}`;
             
-            const uatList = [...new Set(deployments.filter(d => (d.Module === app || d.Application === app) && d.Environment === "UAT" && d.Version && d.Version !== '-').map(d => d.Version))];
+            const uatList = [...new Set(deployments.filter(d => d.Application === app && d.Environment === "UAT" && d.Version && d.Version !== '-').map(d => d.Version))];
             const newerVers = uatList.filter(v => curVer === '-' || compareVersions(v, curVer) > 0).sort(compareVersions);
 
             const select = document.getElementById('upgradeVersionSelect'), confirmBtn = document.getElementById('upgradeConfirmBtn'), warningBox = document.getElementById('upgradeNoVersionsWarning');
@@ -206,7 +211,7 @@
         window.submitUpgradeAction = function() {
             if (!upgradeContext) return;
             const targetVersion = document.getElementById('upgradeVersionSelect').value;
-            const match = deployments.find(d => (d.Module === upgradeContext.app || d.Application === upgradeContext.app) && d.Version === targetVersion && d.Environment === "UAT");
+            const match = deployments.find(d => d.Application === upgradeContext.app && d.Version === targetVersion && d.Environment === "UAT");
             
             window.triggerPipelineAction('UPGRADE', upgradeContext.client, upgradeContext.app, 'UAT', upgradeContext.targetEnv, match ? match.ReleaseId : `RLS-UPG-${Date.now().toString().slice(-4)}`, targetVersion);
             window.closeUpgradeModal();
