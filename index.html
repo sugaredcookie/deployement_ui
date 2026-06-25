@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linedata | Fleet Controller</title>
+    <title>Linedata | Deployment Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,7 +19,7 @@
         <div class="flex items-center justify-between border-b border-slate-800 pb-5 mb-8">
             <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-layer-group text-red-600 animate-pulse text-sm"></i>
-                <h1 class="text-xl font-black text-white tracking-tight uppercase">Linedata Release Manager</h1>
+                <h1 class="text-xl font-black text-white tracking-tight uppercase">Linedata Deployment Dashboard</h1>
             </div>
             <div class="flex gap-4 font-mono bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-800 shadow-sm">
                 <div><span class="text-slate-500">SYSTEM RUN STATUS:</span> <span class="text-emerald-400 font-bold">• LIVE</span></div>
@@ -42,8 +42,8 @@
                     <tr class="border-b border-slate-800 bg-slate-950 font-bold uppercase tracking-wider text-slate-400 text-[10px]">
                         <th class="p-4 pl-8 w-[20%] border-r border-slate-800/60">Client</th>
                         <th class="p-4 w-[25%] border-r border-slate-800/60">App Module</th>
-                        <th class="p-4 text-center w-[27%] border-r border-slate-800/60 bg-slate-950/40">UAT Sandbox Ops</th>
-                        <th class="p-4 text-center w-[28%] bg-slate-950/20">PROD Production Ops</th>
+                        <th class="p-4 text-center w-[27%] border-r border-slate-800/60 bg-slate-950/40">UAT</th>
+                        <th class="p-4 text-center w-[28%] bg-slate-950/20">PROD</th>
                     </tr>
                 </thead>
                 <tbody id="matrix-body" class="divide-y divide-slate-800">
@@ -83,7 +83,6 @@
     </div>
 
     <script>
-        // CHANGED: Target single unified file source pathway directly
         const deploymentLogsCSV = "../applications/deploymentlogs.csv";
 
         let deployments = [];
@@ -104,7 +103,6 @@
         async function loadData() {
             const container = document.getElementById('matrix-body');
             try {
-                // CHANGED: Unified optimization fetching raw telemetry from single CSV master tracking path
                 const res = await fetch(deploymentLogsCSV);
                 if (!res.ok) throw new Error("deploymentlogs.csv not found");
                 
@@ -140,7 +138,6 @@
             const filtered = filterVal ? deployments.filter(d => d.Application === filterVal) : deployments;
             const grouped = {};
 
-            // CHANGED: Reverted key layout tracking map constraint to represent single composite rows per App per Client
             filtered.forEach(row => {
                 const key = `${row.Client}-${row.Application}`;
                 if (!grouped[key]) {
