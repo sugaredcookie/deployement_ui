@@ -95,15 +95,50 @@ function renderTable() {
 }
 
 window.triggerPipelineAction = function(actionType, client, module, sourceEnv, targetEnv, version) {
-    // REMOVED: const cleanClient = client.replace('CLIENT_', '');
-    
-    // Keep the original string (e.g., "CLIENT_A")
-    const title = encodeURIComponent(`[${actionType}] ${module} deployment request for ${client}`);
-    
-    // Pass the exact value down to the issue body
-    const body = encodeURIComponent(`### Run Parameters\n- **client**: ${client}\n- **module**: ${module}\n- **version**: ${version}\n- **stage**: ${targetEnv}\n- **action**: ${actionType}`);
 
-    window.open(`https://github.com/sugaredcookie/deployement_ui/issues/new?title=${title}&body=${body}`, '_blank');
+    // -----------------------------
+    // ROLLBACK LOGIC (same env -1)
+    // -----------------------------
+    if (actionType === "ROLLBACK") {
+
+        const versions = deployments
+            .filter(d =>
+                d.Client === client &&
+                d.Application === module &&
+                d.Environment === targetEnv   // same environment
+            )
+            .map(d => d.Version)
+            .filter(Boolean)
+            .sort(compareVersions);
+
+        const currentIndex = versions.indexOf(version);
+
+        if (currentIndex > 0) {
+            version = versions[currentIndex - 1]; // previous version
+        } else {
+            alert("No previous version available for rollback in this environment.");
+            return;
+        }
+    }
+
+    // -----------------------------
+    // CREATE ISSUE (PROMOTE / UPGRADE / ROLLBACK)
+    // -----------------------------
+    const title = encodeURIComponent(`[${actionType}] ${module} deployment request for ${client}`);
+
+    const body = encodeURIComponent(
+        `### Run Parameters
+- **client**: ${client}
+- **module**: ${module}
+- **version**: ${version}
+- **stage**: ${targetEnv}
+- **action**: ${actionType}`
+    );
+
+    window.open(
+        `https://github.com/sugaredcookie/deployement_ui/issues/new?title=${title}&body=${body}`,
+        '_blank'
+    );
 };
 
 window.openUpgradeWizard = function(client, app, curVer, targetEnv) {
