@@ -38,32 +38,42 @@ jobs:
             core.setOutput("stage", params.stage || '');
             core.setOutput("action", params.action || '');
 
-      # Step 2: Trigger your main module-deploy.yml workflow via GitHub API
+      # Step 2: Trigger your main module-deploy.yml workflow via GitHub API securely
       - name: "Trigger module-deploy.yml Pipeline"
         uses: actions/github-script@v6
+        env:
+          TARGET_CLIENT: ${{ steps.parse_args.outputs.client }}
+          TARGET_MODULE: ${{ steps.parse_args.outputs.module }}
+          TARGET_VERSION: ${{ steps.parse_args.outputs.version }}
+          TARGET_STAGE: ${{ steps.parse_args.outputs.stage }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub, no PAT required!
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'module-deploy.yml', // Your main deployment filename
+              workflow_id: 'module-deploy.yml',
               ref: 'main', 
               inputs: {
-                client: '${{ steps.parse_args.outputs.client }}',
-                module: '${{ steps.parse_args.outputs.module }}',
-                version: '${{ steps.parse_args.outputs.version }}',
-                stage: '${{ steps.parse_args.outputs.stage }}'
+                client: process.env.TARGET_CLIENT,
+                module: process.env.TARGET_MODULE,
+                version: process.env.TARGET_VERSION,
+                stage: process.env.TARGET_STAGE
               }
             });
 
-      # Step 3: Comment on the issue notifying that execution started
+      # Step 3: Comment on the issue notifying that execution started securely
       - name: "Post Success Comment"
         uses: actions/github-script@v6
+        env:
+          TARGET_CLIENT: ${{ steps.parse_args.outputs.client }}
+          TARGET_MODULE: ${{ steps.parse_args.outputs.module }}
+          TARGET_VERSION: ${{ steps.parse_args.outputs.version }}
+          TARGET_STAGE: ${{ steps.parse_args.outputs.stage }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const commentBody = `🚀 **Automation Engine:** Successfully intercepted issue trigger sequence! \n\nDownstream run of \`module-deploy.yml\` has been triggered with inputs:\n- **Client:** \`${{ steps.parse_args.outputs.client }}\` \n- **Module:** \`${{ steps.parse_args.outputs.module }}\` \n- **Version:** \`${{ steps.parse_args.outputs.version }}\` \n- **Target Stage:** \`${{ steps.parse_args.outputs.stage }}\``;
+            const commentBody = `🚀 **Automation Engine:** Successfully intercepted issue trigger sequence! \n\nDownstream run of \`module-deploy.yml\` has been triggered with inputs:\n- **Client:** \`${process.env.TARGET_CLIENT}\` \n- **Module:** \`${process.env.TARGET_MODULE}\` \n- **Version:** \`${process.env.TARGET_VERSION}\` \n- **Target Stage:** \`${process.env.TARGET_STAGE}\``;
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

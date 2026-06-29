@@ -29,15 +29,12 @@ async function loadData() {
 }
 
 function parseCSV(text) {
-    // Split lines and filter out any empty rows or whitespace padding
     const lines = text.trim().split("\n").filter(line => line.trim() !== "");
     if (lines.length === 0) return [];
-    
     const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim());
     return lines.slice(1).map(line => {
         const values = line.split(",").map(v => v.replace(/"/g, "").trim());
-        const row = {}; 
-        headers.forEach((h, i) => row[h] = values[i] || "");
+        const row = {}; headers.forEach((h, i) => row[h] = values[i] || "");
         return row;
     });
 }
@@ -98,8 +95,13 @@ function renderTable() {
     document.getElementById('matrix-body').innerHTML = htmlBuffer || `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">No records match.</td></tr>`;
 }
 
-window.triggerPipelineAction = function() {
-    window.open(`https://github.com/LD-Global-Services/Deployment/actions/workflows/module-deploy.yml?query=branch%3Amain+event%3Aworkflow_dispatch`, '_blank');
+window.triggerPipelineAction = function(actionType, client, module, sourceEnv, targetEnv, version) {
+    const cleanClient = client.replace('CLIENT_', '');
+    const title = encodeURIComponent(`[${actionType}] ${module} deployment request for ${cleanClient}`);
+    const body = encodeURIComponent(`### Run Parameters\n- **client**: ${cleanClient}\n- **module**: ${module}\n- **version**: ${version}\n- **stage**: ${targetEnv}\n- **action**: ${actionType}`);
+
+    // CHANGED: Targets your personal sandbox testing repository endpoint
+    window.open(`https://github.com/sugaredcookie/deployement_ui/issues/new?title=${title}&body=${body}`, '_blank');
 };
 
 window.openUpgradeWizard = function(client, app, curVer, targetEnv) {
@@ -133,7 +135,7 @@ window.openUpgradeWizard = function(client, app, curVer, targetEnv) {
 window.submitUpgradeAction = function() {
     if (!upgradeContext) return;
     const targetVersion = document.getElementById('upgradeVersionSelect').value;
-    window.triggerPipelineAction('UPGRADE', upgradeContext.client, upgradeContext.app, upgradeContext.targetEnv === 'UAT' ? 'QA' : 'UAT', upgradeContext.targetEnv, `RLS-UPG-${Date.now().toString().slice(-4)}`, targetVersion);
+    window.triggerPipelineAction('UPGRADE', upgradeContext.client, upgradeContext.app, upgradeContext.targetEnv === 'UAT' ? 'QA' : 'UAT', upgradeContext.targetEnv, targetVersion);
     window.closeUpgradeModal();
 };
 
