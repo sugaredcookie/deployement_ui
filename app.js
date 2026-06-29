@@ -144,25 +144,27 @@ window.triggerPipelineAction = function(actionType, client, module, sourceEnv, t
     // -----------------------------
     if (actionType === "ROLLBACK") {
 
-        const versions = deployments
-            .filter(d =>
-                d.Client === client &&
-                d.Application === module &&
-                d.Environment === targetEnv   // same environment
-            )
-            .map(d => d.Version)
-            .filter(Boolean)
-            .sort(compareVersions);
+    const env = targetEnv; 
 
-        const currentIndex = versions.indexOf(version);
+    const versions = deployments
+        .filter(d =>
+            d.Client === client &&
+            d.Application === module &&
+            d.Environment === env
+        )
+        .map(d => d.Version)
+        .filter(Boolean)
+        .sort(compareVersions);
 
-        if (currentIndex > 0) {
-            version = versions[currentIndex - 1]; // previous version
-        } else {
-            alert("No previous version available for rollback in this environment.");
-            return;
-        }
+    const currentIndex = versions.indexOf(version);
+
+    if (currentIndex > 0) {
+        version = versions[currentIndex - 1];
+    } else {
+        alert(`No previous version available for rollback in ${env}`);
+        return;
     }
+}
 
     // -----------------------------
     // CREATE ISSUE (PROMOTE / UPGRADE / ROLLBACK)
