@@ -1,7 +1,6 @@
 name: "Module Deployment Engine"
 
 on:
-  # Allows the manual dropdown trigger AND lets our bridge script call it automatically
   workflow_dispatch:
     inputs:
       client:
@@ -33,49 +32,67 @@ on:
 jobs:
   execute-deployment:
     name: "Deploy ${{ github.event.inputs.module }} v${{ github.event.inputs.version }}"
-    runs-on: ubuntu-latest
+    runs-on: windows-latest   # switched to Windows runner for PowerShell
 
     steps:
       - name: "Checkout Source Code"
         uses: actions/checkout@v3
 
       - name: "Initialize Deployment Environment"
+        shell: pwsh
         run: |
-          echo "==============================================="
-          echo "INITIALIZING LINEDATA PIPELINE TARGET"
-          echo "==============================================="
-          echo "Client      : ${{ github.event.inputs.client }}"
-          echo "Module      : ${{ github.event.inputs.module }}"
-          echo "Version     : ${{ github.event.inputs.version }}"
-          echo "Target Stage: ${{ github.event.inputs.stage }}"
-          echo "==============================================="
+          Write-Host "==============================================="
+          Write-Host "INITIALIZING LINEDATA PIPELINE TARGET"
+          Write-Host "==============================================="
+          Write-Host "Client      : ${{ github.event.inputs.client }}"
+          Write-Host "Module      : ${{ github.event.inputs.module }}"
+          Write-Host "Version     : ${{ github.event.inputs.version }}"
+          Write-Host "Target Stage: ${{ github.event.inputs.stage }}"
+          Write-Host "==============================================="
 
-      # PLACEHOLDER: This is where your actual build, Docker push, or SSH deployment commands will run
       - name: "Executing Simulated Deployment Steps"
+        shell: pwsh
         run: |
-          echo "Connecting to Linedata ${{ github.event.inputs.stage }} cluster..."
-          sleep 3
-          echo "Deploying artifact matching manifest build tracking matrix..."
-          sleep 2
-          echo "Verification tests passed successfully."
+          Write-Host "Connecting to Linedata ${{ github.event.inputs.stage }} cluster..."
+          Start-Sleep -Seconds 3
+          Write-Host "Deploying artifact matching manifest build tracking matrix..."
+          Start-Sleep -Seconds 2
+          Write-Host "Verification tests passed successfully."
 
       - name: "Log Success Status"
+        shell: pwsh
         run: |
-          echo "Successfully completed deployment tracking for ${{ github.event.inputs.module }} v${{ github.event.inputs.version }} to ${{ github.event.inputs.stage }}!"
-          
+          Write-Host "Successfully completed deployment tracking for ${{ github.event.inputs.module }} v${{ github.event.inputs.version }} to ${{ github.event.inputs.stage }}!"
+
       - name: "Append New Log Entry to CSV"
+        shell: pwsh
         run: |
-          # 1. Get current timestamp in UTC
-          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          
-          # 2. Build the CSV line matching your header structure:
-          # "Client","Application","Version","Environment","DeploymentStatus","DeploymentDateTime","TriggeredBy"
-          NEW_ROW="\"${{ github.event.inputs.client }}\",\"${{ github.event.inputs.module }}\",\"${{ github.event.inputs.version }}\",\"${{ github.event.inputs.stage }}\",\"Succeeded\",\"$TIMESTAMP\",\"${{ github.actor }}\""
-          
-          # 3. Append to the file
-          echo "$NEW_ROW" >> applications/deploymentlogs.csv
-          
+          # Get current timestamp in UTC
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'")
+
+          $csvPath = "applications/deploymentlogs.csv"
+
+          $newRow = [PSCustomObject]@{
+            Client             = "${{ github.event.inputs.client }}"
+            Application        = "${{ github.event.inputs.module }}"
+            Version            = "${{ github.event.inputs.version }}"
+            Environment        = "${{ github.event.inputs.stage }}"
+            DeploymentStatus   = "Succeeded"
+            DeploymentDateTime = $timestamp
+            TriggeredBy        = "${{ github.actor }}"
+          }
+
+          # Read existing rows
+          $rows = Import-Csv $csvPath
+
+          # Add new row
+          $rows += $newRow
+
+          # Rewrite the file
+          $rows | Export-Csv -Path $csvPath -NoTypeInformation -Encoding utf8
+
       - name: "Commit and Push Updated Logs"
+        shell: pwsh
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
