@@ -96,11 +96,14 @@ function renderTable() {
 }
 
 window.triggerPipelineAction = function(actionType, client, module, sourceEnv, targetEnv, version) {
-    const cleanClient = client.replace('CLIENT_', '');
-    const title = encodeURIComponent(`[${actionType}] ${module} deployment request for ${cleanClient}`);
-    const body = encodeURIComponent(`### Run Parameters\n- **client**: ${cleanClient}\n- **module**: ${module}\n- **version**: ${version}\n- **stage**: ${targetEnv}\n- **action**: ${actionType}`);
+    // REMOVED: const cleanClient = client.replace('CLIENT_', '');
+    
+    // Keep the original string (e.g., "CLIENT_A")
+    const title = encodeURIComponent(`[${actionType}] ${module} deployment request for ${client}`);
+    
+    // Pass the exact value down to the issue body
+    const body = encodeURIComponent(`### Run Parameters\n- **client**: ${client}\n- **module**: ${module}\n- **version**: ${version}\n- **stage**: ${targetEnv}\n- **action**: ${actionType}`);
 
-    // CHANGED: Targets your personal sandbox testing repository endpoint
     window.open(`https://github.com/sugaredcookie/deployement_ui/issues/new?title=${title}&body=${body}`, '_blank');
 };
 

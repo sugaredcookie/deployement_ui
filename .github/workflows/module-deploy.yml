@@ -9,8 +9,8 @@ on:
         required: true
         type: choice
         options:
-          - QA
-          - BAIN
+          - A
+          - B
           - DKCM
           - MASH
           - KLIM
