@@ -36,4 +36,4 @@
 "CLIENT_D","APP_DELTA","4.3.0","QA","Succeeded","2026-06-20 14:45:00 UTC","alice.wonder"
 "CLIENT_A","APP_ALPHA","1.0.0","PROD","Succeeded","2026-06-29 16:42:51 UTC","github-actions[bot]"
 "CLIENT_A","APP_ALPHA","1.1.0","UAT","Succeeded","2026-06-29 16:55:23 UTC","github-actions[bot]"
-"CLIENT_A","APP_ALPHA","1.0.0","UAT","Succeeded","2026-06-29 17:12:32 UTC","github-actions[bot]"
+
