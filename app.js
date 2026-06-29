@@ -1,4 +1,4 @@
-const deploymentLogsCsvUrl = "./applications/deploymentlogs.csv?v=" + new Date().getTime();
+const deploymentLogsCsvUrl = "./applications/deploymentlogs.csv?v=";
 
 let deployments = [];
 let upgradeContext = null;
@@ -17,14 +17,25 @@ function compareVersions(vA, vB) {
 
 async function loadData() {
     const container = document.getElementById('matrix-body');
+
     try {
-        const res = await fetch(deploymentLogsCsvUrl);
+        const res = await fetch(deploymentLogsCsvUrl, { cache: "reload" });
+
         if (!res.ok) throw new Error();
-        deployments = parseCSV(await res.text());
-        populateAppDropdown(); 
+
+        const data = await res.text();
+        deployments = parseCSV(data);
+
+        populateAppDropdown();
         renderTable();
-    } catch (e) { 
-        container.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Failed to parse live telemetry logs</td></tr>`; 
+
+    } catch (e) {
+        container.innerHTML = `
+            <tr>
+                <td colspan="4" class="p-6 text-center text-red-400 font-bold">
+                    Failed to load logs
+                </td>
+            </tr>`;
     }
 }
 
@@ -139,6 +150,7 @@ window.triggerPipelineAction = function(actionType, client, module, sourceEnv, t
         `https://github.com/sugaredcookie/deployement_ui/issues/new?title=${title}&body=${body}`,
         '_blank'
     );
+    
 };
 
 window.openUpgradeWizard = function(client, app, curVer, targetEnv) {
