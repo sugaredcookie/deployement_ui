@@ -1,4 +1,4 @@
-const deploymentLogsCsvUrl = "./applications/deploymentlogs.csv?v=";
+const deploymentLogsCsvUrl = "./applications/deploymentlogs.csv?v=" + Date.now();
 
 let deployments = [];
 let upgradeContext = null;
@@ -19,7 +19,7 @@ async function loadData() {
     const container = document.getElementById('matrix-body');
 
     try {
-        const res = await fetch(deploymentLogsCsvUrl, { cache: "reload" });
+        const res = await fetch(deploymentLogsCsvUrl, { cache: "no-store" });
 
         if (!res.ok) throw new Error();
 
@@ -27,7 +27,7 @@ async function loadData() {
         deployments = parseCSV(data);
 
         populateAppDropdown();
-        renderTable();
+        renderTable();   
 
     } catch (e) {
         container.innerHTML = `
@@ -58,21 +58,53 @@ function populateAppDropdown() {
 
 function renderTable() {
     const filterVal = document.getElementById('appFilter').value;
-    const filtered = filterVal ? deployments.filter(d => d.Application === filterVal) : deployments;
+    const filtered = filterVal
+        ? deployments.filter(d => d.Application === filterVal)
+        : deployments;
+
     const grouped = {};
 
     filtered.forEach(row => {
         const key = `${row.Client}-${row.Application}`;
+
         if (!grouped[key]) {
-            grouped[key] = { client: row.Client, app: row.Application, uat: "-", prod: "-" };
+            grouped[key] = {
+                client: row.Client,
+                app: row.Application,
+                uat: "-",
+                prod: "-",
+                uatTime: null,
+                prodTime: null
+            };
         }
-        if (row.Environment === "UAT" && (grouped[key].uat === "-" || compareVersions(row.Version, grouped[key].uat) > 0)) {
-            grouped[key].uat = row.Version;
+
+        // -------------------------
+        // UAT → latest by datetime
+        // -------------------------
+        if (row.Environment === "UAT") {
+            if (
+                !grouped[key].uatTime ||
+                new Date(row.DeploymentDateTime) > new Date(grouped[key].uatTime)
+            ) {
+                grouped[key].uat = row.Version;
+                grouped[key].uatTime = row.DeploymentDateTime;
+            }
         }
-        if (row.Environment === "PROD" && (grouped[key].prod === "-" || compareVersions(row.Version, grouped[key].prod) > 0)) {
-            grouped[key].prod = row.Version;
+
+        // -------------------------
+        // PROD → latest by datetime
+        // -------------------------
+        if (row.Environment === "PROD") {
+            if (
+                !grouped[key].prodTime ||
+                new Date(row.DeploymentDateTime) > new Date(grouped[key].prodTime)
+            ) {
+                grouped[key].prod = row.Version;
+                grouped[key].prodTime = row.DeploymentDateTime;
+            }
         }
     });
+
 
     let htmlBuffer = '';
     Object.values(grouped).forEach(item => {
