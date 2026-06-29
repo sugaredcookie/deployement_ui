@@ -9,15 +9,10 @@ on:
         required: true
         type: choice
         options:
-          - A
-          - B
-          - DKCM
-          - MASH
-          - KLIM
-          - MPCM
-          - MTEU
-          - QRMO
-          - DEMO
+          - CLIENT_A
+          - CLIENT_B
+          - CLIENT_C
+          - CLIENT_D
       module:
         description: 'Module/Application name matching App folder'
         required: true
