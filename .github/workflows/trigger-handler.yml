@@ -1,0 +1,86 @@
+name: "Pipeline Automation Bridge"
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  parse-and-deploy:
+    name: "Intercept & Trigger Deployment"
+    # Ensure this runs only for your pipeline-formatted automated issues
+    if: contains(github.event.issue.title, '[PROMOTION]') || contains(github.event.issue.title, '[ROLLBACK]') || contains(github.event.issue.title, '[UPGRADE]')
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Parse the structured markdown body text into variables
+      - name: "Parse Issue Parameters"
+        id: parse_args
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const lines = body.split('\n');
+            const params = {};
+            
+            lines.forEach(line => {
+              const match = line.match(/-\s+\*\*([a-zA-Z0-9_]+)\*\*:\s*(.*)/);
+              if (match) {
+                const key = match[1].trim().toLowerCase();
+                const val = match[2].replace(/<\/?[^>]+(>|$)/g, "").trim(); // Strip html text if any
+                params[key] = val;
+              }
+            });
+            
+            console.log("Parsed Runtime Parameters:", params);
+            core.setOutput("client", params.client || '');
+            core.setOutput("module", params.module || '');
+            core.setOutput("version", params.version || '');
+            core.setOutput("stage", params.stage || '');
+            core.setOutput("action", params.action || '');
+
+      # Step 2: Trigger your main module-deploy.yml workflow via GitHub API
+      - name: "Trigger module-deploy.yml Pipeline"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub, no PAT required!
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'module-deploy.yml', // Your main deployment filename
+              ref: 'main', 
+              inputs: {
+                client: '${{ steps.parse_args.outputs.client }}',
+                module: '${{ steps.parse_args.outputs.module }}',
+                version: '${{ steps.parse_args.outputs.version }}',
+                stage: '${{ steps.parse_args.outputs.stage }}'
+              }
+            });
+
+      # Step 3: Comment on the issue notifying that execution started
+      - name: "Post Success Comment"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const commentBody = `🚀 **Automation Engine:** Successfully intercepted issue trigger sequence! \n\nDownstream run of \`module-deploy.yml\` has been triggered with inputs:\n- **Client:** \`${{ steps.parse_args.outputs.client }}\` \n- **Module:** \`${{ steps.parse_args.outputs.module }}\` \n- **Version:** \`${{ steps.parse_args.outputs.version }}\` \n- **Target Stage:** \`${{ steps.parse_args.outputs.stage }}\``;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+
+      # Step 4: Auto-close the issue to keep the repository tracker completely clean
+      - name: "Close Trigger Thread"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+              state_reason: 'completed'
+            });
