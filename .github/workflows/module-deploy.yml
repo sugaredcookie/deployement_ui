@@ -66,4 +66,24 @@ jobs:
 
       - name: "Log Success Status"
         run: |
-          echo "🎉 Successfully completed deployment tracking for ${{ github.event.inputs.module }} v${{ github.event.inputs.version }} to ${{ github.event.inputs.stage }}!"
+          echo "Successfully completed deployment tracking for ${{ github.event.inputs.module }} v${{ github.event.inputs.version }} to ${{ github.event.inputs.stage }}!"
+          
+      - name: "Append New Log Entry to CSV"
+        run: |
+          # 1. Get current timestamp in UTC
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          # 2. Build the CSV line matching your header structure:
+          # "Client","Application","Version","Environment","DeploymentStatus","DeploymentDateTime","TriggeredBy"
+          NEW_ROW="\"${{ github.event.inputs.client }}\",\"${{ github.event.inputs.module }}\",\"${{ github.event.inputs.version }}\",\"${{ github.event.inputs.stage }}\",\"Succeeded\",\"$TIMESTAMP\",\"${{ github.actor }}\""
+          
+          # 3. Append to the file
+          echo "$NEW_ROW" >> applications/deploymentlogs.csv
+          
+      - name: "Commit and Push Updated Logs"
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add applications/deploymentlogs.csv
+          git commit -m "chore: log successful deployment of ${{ github.event.inputs.module }} v${{ github.event.inputs.version }} to ${{ github.event.inputs.stage }}"
+          git push
