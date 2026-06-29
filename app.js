@@ -1,4 +1,4 @@
-const deploymentLogsCsvUrl = "./applications/deploymentlogs.csv";
+const deploymentLogsCsvUrl = "./applications/deploymentlogs.csv?v=" + new Date().getTime();
 
 let deployments = [];
 let upgradeContext = null;
