@@ -4,6 +4,10 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  actions: write
+  issues: write
+
 jobs:
   parse-and-deploy:
     name: "Intercept & Trigger Deployment"
