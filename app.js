@@ -87,7 +87,6 @@ function renderTable() {
                         ${item.prod !== '-' ? `
                             <button onclick="triggerPipelineAction('ROLLBACK', '${item.client}', '${item.app}', 'UAT', 'PROD', '${item.prod}')" class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:bg-amber-600 hover:text-white hover:border-amber-500 text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Rollback</button>
                         ` : ''}
-                        <button onclick="openUpgradeWizard('${item.client}', '${item.app}', '${item.prod}', 'PROD')" class="px-2 py-0.5 rounded bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white text-[9px] font-bold uppercase tracking-wider transition-all shadow-sm">Upgrade</button>
                     </div>
                 </td>
             </tr>`;
